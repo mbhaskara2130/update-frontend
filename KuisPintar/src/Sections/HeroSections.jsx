@@ -1,11 +1,10 @@
-// src/Pages/LandingPage.jsx
 import React from "react";
 import CategorySection from "./CategorySection";
 import heroImage from "../assets/image.png";
 
 export default function HeroSection() {
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+		<div className="min-h-screen bg-gradient-to-b from-blue-50 ">
 			{/* Hero Section */}
 			<section className="flex flex-col md:flex-row items-center justify-between px-8 md:px-16 lg:px-32 py-16 max-w-7xl mx-auto">
 				<div className="md:w-1/2 text-center md:text-left">
@@ -19,17 +18,20 @@ export default function HeroSection() {
 					</p>
 
 					<div className="flex gap-4 mt-8 justify-center md:justify-start">
-					   <button
-              onClick={() => {
-                const kategoriSection = document.getElementById("kategori");
-                if (kategoriSection) {
-                  kategoriSection.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-blue-700 transition cursor-pointer"
-            >
-              Mulai Sekarang
-            </button>
+						<button
+							onClick={() => {
+								const kategoriSection =
+									document.getElementById("kategori");
+								if (kategoriSection) {
+									kategoriSection.scrollIntoView({
+										behavior: "smooth",
+									});
+								}
+							}}
+							className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-blue-700 transition cursor-pointer"
+						>
+							Mulai Sekarang
+						</button>
 					</div>
 				</div>
 

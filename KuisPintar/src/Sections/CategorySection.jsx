@@ -1,59 +1,78 @@
-import React, { useState } from "react";
-import CategoryCard from "../Components/CategoryCard";
-import ConfirmModal from "../Components/ConfirmModal"; // import modal
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaFlask, FaGraduationCap, FaLightbulb, FaBook } from "react-icons/fa";
-import { GiEarthAmerica, GiAtom } from "react-icons/gi";
-
-const categories = [
-  { title: "Matematika", description: "Asah kemampuan berhitungmu", icon: <FaLightbulb className="text-yellow-500 text-4xl" /> },
-  { title: "IPA", description: "Pelajari sains dengan cara seru", icon: <GiEarthAmerica className="text-green-500 text-4xl" /> },
-  { title: "Bahasa Indonesia", description: "Tingkatkan literasi dan tata bahasa", icon: <FaBook className="text-orange-400 text-4xl" /> },
-  { title: "Kimia", description: "Belajar reaksi & senyawa kimia", icon: <FaFlask className="text-orange-500 text-4xl" /> },
-  { title: "Sejarah", description: "Kenali peristiwa penting dunia", icon: <FaGraduationCap className="text-yellow-600 text-4xl" /> },
-  { title: "Fisika", description: "Eksperimen dengan hukum alam", icon: <GiAtom className="text-blue-500 text-4xl" /> },
-];
+import CategoryCard from "../Components/CategoryCard";
+import ConfirmModal from "../Components/StartQuizModal";
+import { getPublicQuizzes } from "../services/quiz.service";
 
 export default function CategorySection() {
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const navigate = useNavigate();
+	const navigate = useNavigate();
+	const [loading, setLoading] = useState(true);
+	const [err, setErr] = useState("");
+	const [quizzes, setQuizzes] = useState([]);
+	const [selectedQuiz, setSelectedQuiz] = useState(null);
 
-  const handleStartQuiz = () => {
-    if (selectedCategory) {
-navigate(`/quiz/${encodeURIComponent(selectedCategory)}`);
-    }
-  };
+	useEffect(() => {
+		(async () => {
+			setLoading(true);
+			setErr("");
+			try {
+				const data = await getPublicQuizzes({ page: 1, limit: 12 });
+				setQuizzes(data);
+			} catch (e) {
+				setErr(e.message || "Gagal memuat kuis");
+			} finally {
+				setLoading(false);
+			}
+		})();
+	}, []);
 
-  return (
-    <section
-      id="kategori"
-      className="bg-white rounded-t-3xl shadow-inner -mt-10 pt-16 pb-24 px-8 md:px-16 lg:px-32"
-    >
-      <h2 className="text-3xl font-bold text-center text-gray-800">
-        Daftar Kategori Kuis
-      </h2>
-      <p className="text-center text-gray-500 mt-2">
-        Pilih kategori favoritmu dan mulai belajar sekarang
-      </p>
+	const handleStartQuiz = () => {
+		if (!selectedQuiz?.id) return;
+		navigate(`/quiz/${selectedQuiz.id}`, { state: { quiz: selectedQuiz } });
+		setSelectedQuiz(null);
+	};
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
-        {categories.map((cat, i) => (
-          <CategoryCard
-            key={i}
-            icon={cat.icon}
-            title={cat.title}
-            description={cat.description}
-            onClick={() => setSelectedCategory(cat.title)}
-          />
-        ))}
-      </div>
+	return (
+		<section
+			id="kategori"
+			className="bg-gradient-to-b from-blue-50 to-white rounded-t-3xl -mt-10 pt-16 pb-24 px-8 md:px-16 lg:px-32"
+		>
+			<h2 className="text-3xl font-bold text-center text-gray-800">
+				Daftar Kuis Publik
+			</h2>
+			<p className="text-center text-gray-500 mt-2">
+				Pilih kuis publik dan mulai belajar sekarang
+			</p>
 
-      {/* Pakai modal modular */}
-      <ConfirmModal
-        category={selectedCategory}
-        onConfirm={handleStartQuiz}
-        onCancel={() => setSelectedCategory(null)}
-      />
-    </section>
-  );
+			{loading && (
+				<div className="text-center mt-8 text-gray-500">Memuat…</div>
+			)}
+			{err && <div className="text-center mt-8 text-rose-600">{err}</div>}
+
+			{!loading && !err && (
+				<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+					{quizzes.map((q) => (
+						<CategoryCard
+							key={q.id}
+							icon={<span className="text-3xl">📘</span>}
+							title={q.title}
+							description={q.description || "—"}
+							onClick={() => setSelectedQuiz(q)}
+						/>
+					))}
+					{quizzes.length === 0 && (
+						<div className="col-span-full text-center text-gray-500">
+							Belum ada kuis publik yang tersedia.
+						</div>
+					)}
+				</div>
+			)}
+
+			<ConfirmModal
+				category={selectedQuiz?.title}
+				onConfirm={handleStartQuiz}
+				onCancel={() => setSelectedQuiz(null)}
+			/>
+		</section>
+	);
 }
